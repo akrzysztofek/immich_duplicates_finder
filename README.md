@@ -1,5 +1,13 @@
 # Immich Duplicate Finder
 
+## VERY IMPORTANT
+
+The one reported here is a fork identical to the initial project, the only change made in the code was the replacement of "asset" with "assets" in the api.py file.
+
+By doing so, the repository also works with the current version of the immich server: v.120.2
+
+While waiting for the change to be reported in the official repository, we wish you good fun!
+
 ## A Comprehensive Solution for Identifying and Managing Duplicate Photos in Immich
 
 ![image](https://github.com/vale46n1/immich_duplicate_finder/assets/36825789/933b168d-b7ff-4cd0-8117-92852b6dc1cc)
