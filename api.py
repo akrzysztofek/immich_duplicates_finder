@@ -8,50 +8,34 @@ import os
 
 @st.cache_data(show_spinner=True) 
 def fetchAssets(immich_server_url, api_key, timeout, type):
-    # Initialize messaging and progress
     if 'fetch_message' not in st.session_state:
         st.session_state['fetch_message'] = ""
     message_placeholder = st.empty()
 
-    # Initialize assets to None or an empty list, depending on your usage expectation
     assets = []
 
-    # Remove trailing slash from immich_server_url if present
     base_url = immich_server_url.rstrip('/')
-    asset_info_url = f"{base_url}/api/asset/"
+    asset_paths_url = f"{base_url}/api/view/folder/unique-paths"
+    asset_info_url = f"{base_url}/api/view/folder"
+
+    response = requests.get(asset_paths_url, headers={'Accept': 'application/json', 'x-api-key': api_key}, verify=False, timeout=timeout)
+    response.raise_for_status()
+    if response.status_code == 200:
+        paths = response.json()
+    else:
+        st.session_state['fetch_message'] = 'Received an empty response.'
+        paths = []
+
+    for path in paths:
+        if path:
+            response = requests.get(f'{asset_info_url}?path={path}', headers={'Accept': 'application/json', 'x-api-key': api_key}, verify=False, timeout=timeout)
+            if response.status_code == 200:
+                assets.extend(response.json())
     
-    try:
-        with st.spinner('Fetching assets...'):
-            # Make the HTTP GET request
-            response = requests.get(asset_info_url, headers={'Accept': 'application/json', 'x-api-key': api_key}, verify=False, timeout=timeout)
-            response.raise_for_status()  # This will raise an exception for HTTP errors
-            
-            content_type = response.headers.get('Content-Type', '')
-            if 'application/json' in content_type:
-                if response.text:
-                    assets = response.json()  # Decode JSON response into a list of assets
-                    assets = [asset for asset in assets if asset.get("type") == type]                       
-                    st.session_state['fetch_message'] = 'Assets fetched successfully!'
-                else:
-                    st.session_state['fetch_message'] = 'Received an empty response.'
-                    assets = []  # Set assets to empty list if response is empty
-            else:
-                st.session_state['fetch_message'] = f'Unexpected Content-Type: {content_type}\nResponse content: {response.text}'
-                assets = []  # Set assets to empty list if unexpected content type
-
-    except requests.exceptions.ConnectTimeout:
-        st.session_state['fetch_message'] = 'Failed to connect to the server. Please check your network connection and try again.'
-        assets = []  # Set assets to empty list on connection timeout
-
-    except requests.exceptions.HTTPError as e:
-        st.session_state['fetch_message'] = f'HTTP error occurred: {e}'
-        assets = []  # Set assets to empty list on HTTP error
-
-    except requests.exceptions.RequestException as e:
-        st.session_state['fetch_message'] = f'Error fetching assets: {e}'
-        assets = []  # Set assets to empty list on other request errors
-
+    assets = [asset for asset in assets if asset.get("type") == type]                       
+    st.session_state['fetch_message'] = 'Assets fetched successfully!'
     message_placeholder.text(st.session_state['fetch_message'])
+
     return assets
 
 def getImage(asset_id, immich_server_url,photo_choice,api_key):   
@@ -59,7 +43,7 @@ def getImage(asset_id, immich_server_url,photo_choice,api_key):
     register_heif_opener()
     ImageFile.LOAD_TRUNCATED_IMAGES = True
     if photo_choice == 'Thumbnail (fast)':
-        response = requests.request("GET", f"{immich_server_url}/api/asset/thumbnail/{asset_id}?format=JPEG", headers={'Accept': 'application/octet-stream','x-api-key': api_key}, data={})
+        response = requests.request("GET", f"{immich_server_url}/api/assets/{asset_id}/thumbnail?size=thumbnail", headers={'Accept': 'application/octet-stream','x-api-key': api_key}, data={})
     else:
         asset_download_url = f"{immich_server_url}/api/download/asset/{asset_id}"
         response = requests.post(asset_download_url, headers={'Accept': 'application/octet-stream', 'x-api-key': api_key}, stream=True)
@@ -121,7 +105,7 @@ def getServerStatistics(immich_server_url, api_key):
     
 def deleteAsset(immich_server_url, asset_id, api_key):
     st.session_state['show_faiss_duplicate'] = False
-    url = f"{immich_server_url}/api/asset"
+    url = f"{immich_server_url}/api/assets"
     payload = json.dumps({
         "force": True,
         "ids": [asset_id]
@@ -150,7 +134,7 @@ def deleteAsset(immich_server_url, asset_id, api_key):
         return False
 
 def updateAsset(immich_server_url, asset_id, api_key, dateTimeOriginal, description, isFavorite, latitude, longitude, isArchived):
-    url = f"{immich_server_url}/api/asset/{asset_id}"  # Ensure the URL is constructed correctly
+    url = f"{immich_server_url}/api/assets/{asset_id}"  # Ensure the URL is constructed correctly
     
     payload = json.dumps({
         "dateTimeOriginal": dateTimeOriginal,
