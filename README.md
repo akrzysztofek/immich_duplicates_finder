@@ -4,9 +4,11 @@
 
 The one reported here is a fork identical to the initial project, the only change made in the code was the replacement of "asset" with "assets" in the api.py file.
 
-By doing so, the repository also works with the current version of the immich server: v.120.2
+By doing so, the repository now works with the current version of the immich server: v.120.2
 
 While waiting for the change to be reported in the official repository, we wish you good fun!
+
+If you use docker, feel free to use: https://hub.docker.com/repository/docker/giuseppemazzara/immich-duplicate-finder/general
 
 ## A Comprehensive Solution for Identifying and Managing Duplicate Photos in Immich
 
