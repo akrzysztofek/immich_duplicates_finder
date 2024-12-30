@@ -18,7 +18,8 @@ def fetchAssets(immich_server_url, api_key, timeout, type):
 
     # Remove trailing slash from immich_server_url if present
     base_url = immich_server_url.rstrip('/')
-    asset_info_url = f"{base_url}/api/asset/"
+    asset_paths_url = f"{base_url}/api/view/folder/unique-paths" 
+    asset_info_url = f"{base_url}/api/view/folder"
     
     try:
         with st.spinner('Fetching assets...'):
@@ -59,7 +60,7 @@ def getImage(asset_id, immich_server_url,photo_choice,api_key):
     register_heif_opener()
     ImageFile.LOAD_TRUNCATED_IMAGES = True
     if photo_choice == 'Thumbnail (fast)':
-        response = requests.request("GET", f"{immich_server_url}/api/asset/thumbnail/{asset_id}?format=JPEG", headers={'Accept': 'application/octet-stream','x-api-key': api_key}, data={})
+        response = requests.request("GET", f"{immich_server_url}/api/assets/{asset_id}/thumbnail?size=thumbnail", headers={'Accept': 'application/octet-stream','x-api-key': api_key}, data={})
     else:
         asset_download_url = f"{immich_server_url}/api/download/asset/{asset_id}"
         response = requests.post(asset_download_url, headers={'Accept': 'application/octet-stream', 'x-api-key': api_key}, stream=True)
@@ -121,7 +122,7 @@ def getServerStatistics(immich_server_url, api_key):
     
 def deleteAsset(immich_server_url, asset_id, api_key):
     st.session_state['show_faiss_duplicate'] = False
-    url = f"{immich_server_url}/api/asset"
+    url = f"{immich_server_url}/api/assets"
     payload = json.dumps({
         "force": True,
         "ids": [asset_id]
