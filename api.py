@@ -44,7 +44,6 @@ def getImage(asset_id, immich_server_url,photo_choice,api_key):
     ImageFile.LOAD_TRUNCATED_IMAGES = True
     if photo_choice == 'Thumbnail (fast)':
         response = requests.request("GET", f"{immich_server_url}/api/assets/{asset_id}/thumbnail?size=thumbnail", headers={'Accept': 'application/octet-stream','x-api-key': api_key}, data={})
-        response = requests.request("GET", f"{immich_server_url}/api/assets/{asset_id}/thumbnail?size=thumbnail", headers={'Accept': 'application/octet-stream','x-api-key': api_key}, data={})
     else:
         asset_download_url = f"{immich_server_url}/api/download/asset/{asset_id}"
         response = requests.post(asset_download_url, headers={'Accept': 'application/octet-stream', 'x-api-key': api_key}, stream=True)
@@ -106,7 +105,6 @@ def getServerStatistics(immich_server_url, api_key):
     
 def deleteAsset(immich_server_url, asset_id, api_key):
     st.session_state['show_faiss_duplicate'] = False
-    url = f"{immich_server_url}/api/assets"
     url = f"{immich_server_url}/api/assets"
     payload = json.dumps({
         "force": True,
