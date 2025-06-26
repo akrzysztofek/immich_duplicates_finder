@@ -26,9 +26,12 @@ def fetchAssets(immich_server_url, api_key, timeout, type):
         st.session_state['fetch_message'] = 'Received an empty response.'
         paths = []
 
-    for path in paths:
+    for i, path in enumerate(paths):
+        if i >= 10:
+            break
         if path:
-            response = requests.get(f'{asset_info_url}?path={path}', headers={'Accept': 'application/json', 'x-api-key': api_key}, verify=False, timeout=timeout)
+            response = requests.get(
+                f'{asset_info_url}?path={path}', headers={'Accept': 'application/json', 'x-api-key': api_key}, verify=False, timeout=timeout)
             if response.status_code == 200:
                 assets.extend(response.json())
     

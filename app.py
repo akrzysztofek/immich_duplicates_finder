@@ -90,15 +90,6 @@ def configure_sidebar():
         additional_data = "Immich duplicator finder"
         st.markdown(f"**Version:** {program_version}\n\n{additional_data}")
 
-def fetch_assets(immich_server_url, api_key, timeout):
-    return fetchAssets(immich_server_url, api_key, timeout, 'IMAGE')
-
-def calculate_faiss_index(assets, immich_server_url, api_key):
-    calculateFaissIndex(assets, immich_server_url, api_key)
-
-def generate_duplicate_db():
-    generate_db_duplicate()
-
 def main():
     setup_session_state()
     configure_sidebar()
@@ -106,32 +97,33 @@ def main():
 
     # Attempt to fetch assets if any asset-related operation is to be performed
     if st.session_state['calculate_faiss'] or st.session_state['generate_db_duplicate'] or st.session_state['show_faiss_duplicate']:
-        with multiprocessing.Pool() as pool:
-            assets_result = pool.apply_async(fetch_assets, (immich_server_url, api_key, timeout))
-            assets = assets_result.get()
+        assets = fetchAssets(immich_server_url, api_key,timeout, 'IMAGE')
         if not assets:
             st.error("No assets found or failed to fetch assets.")
             return  # Stop further execution since there are no assets to process
 
     # Calculate the FAISS index if the corresponding flag is set
     if st.session_state['calculate_faiss'] and assets:
-        with multiprocessing.Pool() as pool:
-            pool.apply_async(calculate_faiss_index, (assets, immich_server_url, api_key))
+        calculateFaissIndex(
+            assets, 
+            immich_server_url, 
+            api_key
+        )
 
     # Show FAISS duplicate photos if the corresponding flag is set
     if st.session_state['generate_db_duplicate']:
-        with multiprocessing.Pool() as pool:
-            pool.apply_async(generate_duplicate_db)
+       generate_db_duplicate()
 
     # Show FAISS duplicate photos if the corresponding flag is set
     if st.session_state['show_faiss_duplicate'] and assets:
-        show_duplicate_photos_faiss(
-            assets, st.session_state['limit'],
+       show_duplicate_photos_faiss(
+           assets, st.session_state['limit'], 
             st.session_state['faiss_min_threshold'],
             st.session_state['faiss_max_threshold'],
             immich_server_url,
             api_key
         )
+
 
 if __name__ == "__main__":
     main()
